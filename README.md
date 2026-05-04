@@ -18,3 +18,7 @@
 
 CONTAGEM - MG  
 2025
+
+GOEL, V. Find the common values in an array of arrays. Disponível em: <https://stackoverflow.com/questions/6971945/find-the-common-values-in-an-array-of-arrays>.
+
+‌

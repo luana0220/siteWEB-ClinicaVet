@@ -3,22 +3,8 @@ require "dados.php";
 
 
 $filtroPorCategoria = $_GET['categoria'] ?? 'Todos';
-$numServicos = count($itens);
-function filtraCategoria($itens, $filtro)
-{
-    if ($filtro == "Todos") {
-        return $itens;
-    }
 
-    $itensFiltrados = [];
-    foreach ($itens as $item) {
-        if ($item['categoria'] == $filtro) {
-            $itensFiltrados[] = $item;
-        }
-    }
 
-    return $itensFiltrados;
-}
 
 function spanEstoque($item)
 {
@@ -27,12 +13,16 @@ function spanEstoque($item)
         return "<span class= 'badge text-bg-danger'>" . $numHorDisponiveis . " disponíveis</span>";
     } else if ($numHorDisponiveis <= 3) {
         return "<span class= 'badge text-bg-warning'>" . $numHorDisponiveis . " disponíveis</span>";
-    } else if ($numHorDisponiveis > 3) {
+    } else {
         return "<span class= 'badge text-bg-success'>" . $numHorDisponiveis . " disponíveis</span>";
     }
 }
 
-$itensFiltrados = filtraCategoria($itens, $filtroPorCategoria);
+
+$itensFiltrados = array_filter($itens, function ($item) use ($filtroPorCategoria) {
+    return $filtroPorCategoria == "Todos" || $filtroPorCategoria == $item['categoria'];
+});
+$numServicos = count($itensFiltrados);
 
 ?>
 
@@ -55,13 +45,14 @@ $itensFiltrados = filtraCategoria($itens, $filtroPorCategoria);
             <div class="card mb-4">
                 <div class="card-body">
                     <h2 class="card-title">Serviçoes Disponíveis da clínica</h2>
-                    <h4 class="card-text">Quantidade de serviçoes disponíveis atualamente: <?= $numServicos ?></h4>
+                    <h4 class="card-text">Quantidade de serviçoes disponíveis atualmente: <?= $numServicos ?></h4>
                     <!-- Categorias -->
-                    <div class="list-group list-group-horizontal justify-content-end mb-4">
+                    <div class="list-group list-group-horizontal justify-content-end mb-4 gap-1">
                         <?php foreach ($categorias as $categoria): ?>
                             <a href="?categoria=<?= $categoria ?>"
-                                class="list-group-item fw-bold <?= $filtroPorCategoria == $categoria ? 'active' : '' ?>">
-                                <?= $categoria ?></a>
+                                class="list-group-item list-group-item-action fw-bold text-center ?> <?= $filtroPorCategoria == $categoria ? 'active' : '' ?>">
+                                <?= htmlspecialchars($categoria) ?>
+                            </a>
                         <?php endforeach; ?>
                     </div>
                 </div>
@@ -79,17 +70,17 @@ $itensFiltrados = filtraCategoria($itens, $filtroPorCategoria);
                             <img src="imagens/<?= $item['imagem'] ?>" class="card-img-top">
 
                             <div class="card-body">
-                                <h4 class="card-title"><?= $item['nome'] ?></h4>
+                                <h4 class="card-title"><?= htmlspecialchars($item['nome']) ?></h4>
 
                             </div>
                             <ul class="list-group list-group-flush">
                                 <li class="list-group-item">
-                                    <h5 class="card-text">R$ <?= number_format($item['valor'], 2, ",", ".") ?></h5>
+                                    <h5 class="card-text">R$ <?= htmlspecialchars( number_format($item['valor'], 2, ",", ".") )?></h5>
                                 </li>
                                 <li class="list-group-item"><?= spanEstoque($item) ?></li>
                             </ul>
                             <div class="card-footer text-center">
-                                <a href="" class="btn btn-primary">Go</a>
+                                <a href="detalhes.php?id=<?= $item['id'] ?>" class="btn btn-primary">Ver detalhes</a>
                             </div>
 
                         </div>
