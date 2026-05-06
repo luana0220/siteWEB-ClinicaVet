@@ -1,10 +1,65 @@
 <?php
 
 require 'dados.php';
+if ($_SERVER['REQUEST_METHOD'] === "POST") {
+    $idAnimal = $_POST['id'] ?? '';
+    $nomeDono = $_POST['nome'] ?? '';
+    $telefone = $_POST['telefone'];
+    $numeroAnimais = $_POST['quantidade'];
+    $animais = $_POST['animais'] ?? [];
+    $dataGeracaoConfirm = getdate();
 
+    $item = buscarItem($idAnimal, $itens);
+    $erros = [];
 
+    if (empty(trim($nomeDono))) {
+        $erros[] = "O nome do dono do animal é obrifatório";
+    }
 
+    $telefoneVerificado = preg_replace('/\D/', '', $telefone);
+    if (!strlen($telefoneVerificado) === 10 || !strlen($telefoneVerificado) === 11) {
+        $erros[] = "Digite um telefone válido!";
+    }
 
+    if ($numeroAnimais === '' || !is_numeric($numeroAnimais)) {
+        $erros[] = "A quantidade de animais é obrigatória e deve ser um número";
+    } else if ($numeroAnimais < 1) {
+        $erros[] = "É necessário informar pelo menos um animal";
+    }
+
+    if ($item == null) {
+        $erros[] = "Não foi possível encontrar o item";
+    }
+
+    foreach ($animais as $indiceAnimal => $animal) {
+        if(empty(trim($animal['nome']))) {
+            $erros[] = "O nome do animal " . ($indiceAnimal + 1) . " não foi informado.O nome do animal é obrigatório";
+        }
+
+        if(empty(trim($animal['especie'])) || $animal['especie'] === "") {
+             $erros[] = "A espécie do animal " . ($indiceAnimal + 1) . " não foi informada.A espécie do animal é obrigatório";
+        }
+
+        if(empty(trim($animal['sexo']))) {
+            $erros[] = "O sexo do animal " . ($indiceAnimal + 1) . " (" . $animal['nome'] . ") não foi informado. O sexo é obrigatório";
+        }
+
+        if($animal['idade'] === '' || !is_numeric($animal['idade'])) {
+            $erros[] = 'A idade é obrigatória e deve ser um número. O animal " . ($indiceAnimal + 1) . "  não teve sua idade informada';
+        } else if($animal['idade'] < 0 || $animal['idade'] > 30) {
+            $erros[] = 'A idade do animal " . ($indiceAnimal + 1) . "(" . deve estar entre 0 e 30.';
+        }
+
+        if(empty(trim($animal['horario']))) {
+            $erros[] = "O horário do/da" . $item['nome'] . " do animal " . ($indiceAnimal + 1) . " não foi informada.O horário é obrigatório";
+        }
+    }
+
+    $valorTotal = $numeroAnimais * $item['valor'];
+} else {
+    echo "<h3>Método inválido. Insira os dados pelo <a href='detalhes.php'>formulário</a>.</h3>";
+    exit();
+}
 
 ?>
 <!DOCTYPE html>
@@ -92,13 +147,14 @@ require 'dados.php';
 
                             <!-- alinha direita -->
                             <div class="text-end">
-                                <span class="badge fw-bold bg-<?= $coresEspecies[$animal['especie']] ?> fs-6 mb-2">
+                                <span class="badge fw-bold d-block bg-<?= $coresEspecies[$animal['especie']] ?> fs-6 mb-2">
                                     <?= htmlspecialchars(ucfirst($animal['especie'])) ?>
                                 </span>
                                 <span class="badge d-block fw-bold mb-1 bg-<?= $coresSexo[$animal['sexo']] ?> fs-6">
                                     <?= htmlspecialchars(ucfirst($animal['sexo'])) ?>
                                 </span>
-                                <p class="mb-0 fw-bold d-block fs-5"><?= htmlspecialchars($animal['idade']) ?> anos</p>
+                                <span class="d-block-inline"></span>
+                                <p class="mb-0 fw-bold d-block fs-6"><?= $animal['idade'] > 1 ? htmlspecialchars($animal['idade']) . "ano(s)" : "Nenhum ano completo" ?></p>
                             </div>
 
                         </div>
@@ -111,8 +167,13 @@ require 'dados.php';
 
             </div>
             <div class="card-footer text-center">
+                <h2 class="text-primary fw-bold">Valor total: <?= htmlspecialchars(number_format($valorTotal, "2", ",", ".")) ?></h2>
+                <hr>
                 <a href="index.php" class="btn btn-primary">Voltar ao início</a>
             </div>
+        </div>
+        <div class="card-footer">
+            
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
