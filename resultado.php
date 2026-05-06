@@ -1,6 +1,9 @@
 <?php
 
 require 'dados.php';
+
+
+
 if ($_SERVER['REQUEST_METHOD'] === "POST") {
     $idAnimal = $_POST['id'] ?? '';
     $nomeDono = $_POST['nome'] ?? '';
@@ -13,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
     $erros = [];
 
     if (empty(trim($nomeDono))) {
-        $erros[] = "O nome do dono do animal é obrifatório";
+        $erros[] = "O nome do dono do animal é obrigatório";
     }
 
     $telefoneVerificado = preg_replace('/\D/', '', $telefone);
@@ -74,6 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
 </head>
 
 <body>
+    <?php require "header.php"; ?>
     <div class="container mt-5" style="max-width: 800px;">
         <?php if (!empty($erros)): ?>
             <div class="alert alert-danger">
@@ -179,6 +183,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous"></script>
+<?php require "footer.php"; ?>
 </body>
 
 </html>

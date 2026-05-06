@@ -12,11 +12,11 @@
         </div>
     </footer> -->
 
-<!-- footer.php -->
+
 <footer class="bg-dark text-white py-4 mt-5">
     <div class="container">
         <div class="row">
-            <!-- Coluna 1: Informações da Clínica -->
+
             <div class="col-md-4 mb-3">
                 <h5 class="mb-3">Clínica Animed</h5>
                 <p class="small">
@@ -25,7 +25,6 @@
                 </p>
             </div>
 
-            <!-- Coluna 2: Contato -->
             <div class="col-md-4 mb-2">
                 <h5 class="mb-2">Contato</h5>
                 <ul class="list-unstyled small">
@@ -48,7 +47,6 @@
                 </ul>
             </div>
 
-            <!-- Coluna 3: Horário de Funcionamento -->
             <div class="col-md-4 mb-2">
                 <h5 class="mb-3">Horário de Atendimento</h5>
                 <ul class="list-unstyled small">
@@ -61,7 +59,6 @@
 
         <hr class="bg-secondary my-2">
 
-        <!-- Copyright -->
         <div class="row">
             <div class="col-md-6 text-center text-md-start">
                 <p class="mb-0 small">
