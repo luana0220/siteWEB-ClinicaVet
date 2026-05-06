@@ -34,7 +34,7 @@ $numServicos = count($itensFiltrados);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <title>Document</title>
+    <title>Clínica ANIMED</title>
 
 </head>
 
@@ -43,8 +43,8 @@ $numServicos = count($itensFiltrados);
     <body>
         <div class="container mt-4">
             <div class="card mb-4">
+                 <h2 class="card-title m-3">Serviços Disponíveis da clínica</h2>
                 <div class="card-body">
-                    <h2 class="card-title">Serviçoes Disponíveis da clínica</h2>
                     <h4 class="card-text">Quantidade de serviçoes disponíveis atualmente: <?= $numServicos ?></h4>
                     <!-- Categorias -->
                     <div class="list-group list-group-horizontal justify-content-end mb-4 gap-1">
