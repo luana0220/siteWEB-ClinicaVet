@@ -39,7 +39,7 @@ $numServicos = count($itensFiltrados);
 </head>
 
 <body>
-
+<?php require "header.php"; ?>
     <body>
         <div class="container mt-4">
             <div class="card mb-4">
@@ -75,7 +75,8 @@ $numServicos = count($itensFiltrados);
                             </div>
                             <ul class="list-group list-group-flush">
                                 <li class="list-group-item">
-                                    <h5 class="card-text">R$ <?= htmlspecialchars( number_format($item['valor'], 2, ",", ".") )?></h5>
+                                    <h5 class="card-text">R$
+                                        <?= htmlspecialchars(number_format($item['valor'], 2, ",", ".")) ?></h5>
                                 </li>
                                 <li class="list-group-item"><?= spanEstoque($item) ?></li>
                             </ul>
@@ -89,7 +90,10 @@ $numServicos = count($itensFiltrados);
                 <?php endforeach; ?>
             </div>
         </div>
+        <?php require "footer.php"; ?>
     </body>
+
+    
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
