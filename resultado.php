@@ -3,7 +3,7 @@
 require 'dados.php';
 
 
-
+//verifica se foi enviado
 if ($_SERVER['REQUEST_METHOD'] === "POST") {
     $idAnimal = $_POST['id'] ?? '';
     $nomeDono = $_POST['nome'] ?? '';
@@ -13,12 +13,14 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
     $dataGeracaoConfirm = getdate();
 
     $item = buscarItem($idAnimal, $itens);
-    $erros = [];
+    $erros = []; //array para erros
 
+    //verificações 
     if (empty(trim($nomeDono))) {
         $erros[] = "O nome do dono do animal é obrigatório";
     }
 
+    //tira qualquer carcatere que não seja número e usa o numero padrao de digitos brasileiros
     $telefoneVerificado = preg_replace('/\D/', '', $telefone);
     if (!strlen($telefoneVerificado) === 10 || !strlen($telefoneVerificado) === 11) {
         $erros[] = "Digite um telefone válido!";
@@ -34,34 +36,36 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
         $erros[] = "Não foi possível encontrar o item";
     }
 
+    //faz um for para verificar os dados de cada item no array com os dados de animais enviados, e caos dê errado exibe o indice do animal que não inserido corretamente
     foreach ($animais as $indiceAnimal => $animal) {
-        if(empty(trim($animal['nome']))) {
+        if (empty(trim($animal['nome']))) {
             $erros[] = "O nome do animal " . ($indiceAnimal + 1) . " não foi informado.O nome do animal é obrigatório";
         }
 
-        if(empty(trim($animal['especie'])) || $animal['especie'] === "") {
-             $erros[] = "A espécie do animal " . ($indiceAnimal + 1) . " não foi informada.A espécie do animal é obrigatório";
+        if (empty(trim($animal['especie'])) || $animal['especie'] === "") {
+            $erros[] = "A espécie do animal " . ($indiceAnimal + 1) . " não foi informada.A espécie do animal é obrigatório";
         }
 
-        if(empty(trim($animal['sexo']))) {
+        if (empty(trim($animal['sexo']))) {
             $erros[] = "O sexo do animal " . ($indiceAnimal + 1) . " (" . $animal['nome'] . ") não foi informado. O sexo é obrigatório";
         }
 
-        if($animal['idade'] === '' || !is_numeric($animal['idade'])) {
+        if ($animal['idade'] === '' || !is_numeric($animal['idade'])) {
             $erros[] = 'A idade é obrigatória e deve ser um número. O animal " . ($indiceAnimal + 1) . "  não teve sua idade informada';
-        } else if($animal['idade'] < 0 || $animal['idade'] > 30) {
+        } else if ($animal['idade'] < 0 || $animal['idade'] > 30) {
             $erros[] = 'A idade do animal " . ($indiceAnimal + 1) . "(" . deve estar entre 0 e 30.';
         }
 
-        if(empty(trim($animal['horario']))) {
+        if (empty(trim($animal['horario']))) {
             $erros[] = "O horário do/da" . $item['nome'] . " do animal " . ($indiceAnimal + 1) . " não foi informada.O horário é obrigatório";
         }
     }
 
+    //calcula valor total usando a quantidade de animais e o valor do item
     $valorTotal = $numeroAnimais * $item['valor'];
 } else {
     echo "<h3>Método inválido. Insira os dados pelo <a href='detalhes.php'>formulário</a>.</h3>";
-    exit();
+    exit(); //sai do metodo
 }
 
 ?>
@@ -79,6 +83,8 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
 <body>
     <?php require "header.php"; ?>
     <div class="container mt-5" style="max-width: 800px;">
+
+        <!--exibição de erros-->
         <?php if (!empty($erros)): ?>
             <div class="alert alert-danger">
                 <strong>Corrija os erros abaixo:</strong>
@@ -96,17 +102,22 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                 <h4>Confirmação do agendamento</h4>
             </div>
             <div class="card-body">
+                <!--exibe primeiro os dados do dono-->
                 <div class="card-title mt-3">
                     <h5>Olá, <?= htmlspecialchars($nomeDono) ?></h5>
                     <p class="fs-6"><strong>Telefone:</strong> <?= htmlspecialchars($telefone) ?></p>
                 </div>
                 <div class="d-flex justify-content-between">
                     <span>Resumo do agendamento</span>
+                    <!--exibição da data--->
                     <span>Gerado em
-                        <strong><?= $dataGeracaoConfirm['mday'] . "/" . $dataGeracaoConfirm['mon'] . "/" . $dataGeracaoConfirm['year'] . " " . $dataGeracaoConfirm['hours'] . ":" . $dataGeracaoConfirm['minutes'] ?></strong></span>
+                        <strong>
+                            <?= $dataGeracaoConfirm['mday'] . "/" . $dataGeracaoConfirm['mon'] . "/" . $dataGeracaoConfirm['year'] . " " . $dataGeracaoConfirm['hours'] . ":" . $dataGeracaoConfirm['minutes'] ?>
+                        </strong></span>
                 </div>
 
                 <div class="card mb-3">
+                    <!--alinha duas divs para deixar o layout parecido com o da tela sugerida seguindo esse padrao: ação             resultado, lado a lado-->
                     <div
                         class="card-body d-flex justify-content-between align-items-start border border-light-subtle p-2">
 
@@ -134,6 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                 </div>
 
 
+                <!--foreach para exibir os dados d ecada animal-->
                 <?php foreach ($animais as $animal): ?>
                     <div class="card mt-2 border border-secondary ">
                         <div class="card-header text-<?= $cores[$item['categoria']] ?> fw-bold"> Nome:
@@ -151,39 +163,44 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
 
                             <!-- alinha direita -->
                             <div class="text-end">
+                                <!--usa badges para exibir sexo e espécie usando as cores especfificas do array em dados.php-->
                                 <span class="badge fw-bold d-block bg-<?= $coresEspecies[$animal['especie']] ?> fs-6 mb-2">
-                                    <?= htmlspecialchars(ucfirst($animal['especie'])) ?>
+                                    <?= htmlspecialchars(ucfirst($animal['especie'])) ?><!--ucFirst para deixar a primeira letra maiuscula-->
                                 </span>
                                 <span class="badge d-block fw-bold mb-1 bg-<?= $coresSexo[$animal['sexo']] ?> fs-6">
                                     <?= htmlspecialchars(ucfirst($animal['sexo'])) ?>
                                 </span>
                                 <span class="d-block-inline"></span>
-                                <p class="mb-0 fw-bold d-block fs-6"><?= $animal['idade'] > 1 ? htmlspecialchars($animal['idade']) . "ano(s)" : "Nenhum ano completo" ?></p>
+                                <p class="mb-0 fw-bold d-block fs-6">
+                                    <?= $animal['idade'] > 1 ? htmlspecialchars($animal['idade']) . " ano(s)" : "Nenhum ano completo" ?>
+                                </p>
                             </div>
 
                         </div>
 
                         <div class="text-center border-top border-secondary p-1">
-                            <h5 class="fw-bold text-success">Horário <?= $item['nome'] ?>: <?= $animal['horario'] ?>h</h5>
+                            <h5 class="fw-bold text-success">Horário <?= htmlspecialchars( $item['nome']) ?>: <?= htmlspecialchars($animal['horario']) ?>h</h5>
                         </div>
                     </div>
                 <?php endforeach; ?>
 
             </div>
             <div class="card-footer text-center">
-                <h2 class="text-primary fw-bold">Valor total: <?= htmlspecialchars(number_format($valorTotal, "2", ",", ".")) ?></h2>
+                <h2 class="text-primary fw-bold">Valor total:
+                    <?= htmlspecialchars(number_format($valorTotal, "2", ",", ".")) ?>
+                </h2>
                 <hr>
                 <a href="index.php" class="btn btn-primary">Voltar ao início</a>
             </div>
         </div>
         <div class="card-footer">
-            
+
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous"></script>
-<?php require "footer.php"; ?>
+    <?php require "footer.php"; ?>
 </body>
 
 </html>

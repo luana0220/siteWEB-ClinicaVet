@@ -1,12 +1,15 @@
 <?php
 require 'dados.php';
 
-
-
+//pega o id para exibir na confirmação
 $idItem = $_GET['id'] ?? "";
+//busca o item de acordo com o id, é usado para exibir as informações
 $infosItem = buscarItem($idItem, $itens) ?? null;
+
+//conta os itens do array do item selecionadpp
 $numHorariosDisponiveis = count($infosItem['horarios']);
 
+//decide a cor de acordo como horário
 if ($numHorariosDisponiveis == 0) {
     $corSpanHorarios = "bg-danger";
 } else if ($numHorariosDisponiveis <= 3) {
@@ -20,12 +23,13 @@ if ($infosItem == null) {
     echo "<a href=\"index.php\">Voltar</a>";
 }
 
+// primeira camada de verificação
 $numeroAnimais = $_POST['quantidade'] ?? '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $numeroAnimais < 1) {
     echo "<div class=\"alert alert-danger\" role=\"alert\">Você precisa agendar pelo menos 1 animal</div>";
 }
 
-
+//nome do dono pgeo pelo envio
 $nomeDono = $_POST['nome'] ?? "";
 $telefoneDono = $_POST['telefone'] ?? "";
 $horariosDoItemDisponiveis = array_intersect($horariosDisponiveis, $infosItem['horarios']);
@@ -46,8 +50,10 @@ $horariosDoItemDisponiveis = array_intersect($horariosDisponiveis, $infosItem['h
 <body>
     <div class="container mt-4">
         <div class="row">
+            <!--uso de colunas para a responsividade em diferentes telas-->
             <div class="col-sm-6 mb-3 mb-sm-0">
-                <div class="card border-primary">
+                <div class="card border-primary"> <!--define borda do card -->
+                    <!--repete a estrutra do card da exibição mas com a descrição agora-->
                     <div class="card-header card border-primary mb-0">
                         <h2 class="card-title p-2"><?= $infosItem['nome'] ?></h2>
                         <ul class="list-group list-group-flush">
@@ -65,7 +71,7 @@ $horariosDoItemDisponiveis = array_intersect($horariosDisponiveis, $infosItem['h
                         style="max-height: 350px; object-fit: contain;">
                     <div class="card-body">
                         <h3 class="card-text text-success fw-bold">R$
-                            <?= htmlspecialchars(number_format($infosItem['valor'], 2, ",", ".")) ?></h3>
+                            <?= htmlspecialchars(htmlspecialchars(number_format($infosItem['valor'], 2, ",", "."))) ?></h3>
                         <h5 class="card-text"><?= htmlspecialchars($infosItem['descricao']) ?></h5>
                     </div>
                 </div>
@@ -76,6 +82,7 @@ $horariosDoItemDisponiveis = array_intersect($horariosDisponiveis, $infosItem['h
                     <h3 class="card-title p-2">Solicitar <?= htmlspecialchars($infosItem['nome']) ?></h3>
                 </div>
                 <div class="card-body">
+                    <!-- verifica se o form foi enviado, se não exibe formulário inicial: nome e telefone dono, e quantidade de animais-->
                     <?php if ($_SERVER['REQUEST_METHOD'] != 'POST' || empty($numeroAnimais)): ?>
                         <form method="POST">
                             <fieldset class="border p-3 rounded mb-3">
@@ -103,19 +110,19 @@ $horariosDoItemDisponiveis = array_intersect($horariosDisponiveis, $infosItem['h
                                 </div>
                             </fieldset>
                             <div class="card-footer text-center">
-
                                 <div class="form-check d-flex justify-content-center align-items-center gap-2">
                                 </div>
                                 <button type="submit" class="btn btn-secondary">Continuar ➡️</button>
                             </div>
                         </form>
+                        <!--se o form inicial foi enviado leva para um formulário mais detalhado: nome, idade, sexo e espécie do animal e a hora do procedimento-->
                     <?php else: ?>
                         <form action="resultado.php" method="POST">
                             <div class="accordion" id="accordionForm">
-
+                                <!--para a quantidade digitada pelo usuário ele gera um  card no formulário e insere em um array[indice][chave](por isso se usa um array de i-->
                                 <?php for ($i = 0; $i < $numeroAnimais; $i++): ?>
 
-                                    <div class="accordion-item">
+                                    <div class="accordion-item"> <!-- accordion para melhorar a visualização caso sejam inseridos muitos animais-->
 
                                         <h2 class="accordion-header">
                                             <button class="accordion-button <?= $i > 0 ? 'collapsed' : '' ?>" type="button"
@@ -174,6 +181,7 @@ $horariosDoItemDisponiveis = array_intersect($horariosDisponiveis, $infosItem['h
                                                             <label class="form-label">Horário</label>
 
                                                             <?php foreach ($horariosDisponiveis as $horario): ?>
+                                                                <!--verica os elemento que o o array de horarios do item tem em comum com o $o array geral de horários e apatir disso deixa os horários disponiveis verdes e ativos-->
                                                                 <?php $disponivel = in_array($horario, $infosItem['horarios']); ?>
 
                                                                 <div
@@ -204,8 +212,7 @@ $horariosDoItemDisponiveis = array_intersect($horariosDisponiveis, $infosItem['h
 
                             </div>
 
-
-
+                            <!--inputs escondidos para levar os dados do form inicial para a página de resultados-->
                             <input type="hidden" name="nome" value="<?= $nomeDono ?>">
                             <input type="hidden" name="telefone" value="<?= $telefoneDono ?>">
                             <input type="hidden" name="quantidade" value="<?= $numeroAnimais ?>">
@@ -226,6 +233,7 @@ $horariosDoItemDisponiveis = array_intersect($horariosDisponiveis, $infosItem['h
             </div>
         </div>
     </div>
+    <!--uso de java script para para os accordion-->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous"></script>
