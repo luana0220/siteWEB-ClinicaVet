@@ -100,7 +100,7 @@ $horariosDoItemDisponiveis = array_intersect($horariosDisponiveis, $infosItem['h
                                 <div class="mb-3">
                                     <label for="quantidade" class="form-label">Quantidade de animais para agendar o
                                         serviço</label>
-                                    <input type="number" name="quantidade" id="quantidade" class="form-control" required>
+                                    <input type="number" name="quantidade" id="quantidade" class="form-control" min="1" required>
                                 </div>
                             </fieldset>
                             <div class="card-footer text-center">
@@ -168,7 +168,7 @@ $horariosDoItemDisponiveis = array_intersect($horariosDisponiveis, $infosItem['h
                                                         <div class="mb-3">
                                                             <label class="form-label">Idade</label>
                                                             <input type="number" name="animais[<?= $i ?>][idade]"
-                                                                class="form-control" min="0" max="100" required>
+                                                                class="form-control" min="0" max="30" required>
                                                         </div>
 
                                                         <div class="mb-3">
