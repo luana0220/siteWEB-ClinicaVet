@@ -48,6 +48,7 @@ $horariosDoItemDisponiveis = array_intersect($horariosDisponiveis, $infosItem['h
 </head>
 
 <body>
+    <?php require "header.php"; ?>
     <div class="container mt-4">
         <div class="row">
             <!--uso de colunas para a responsividade em diferentes telas-->
@@ -237,6 +238,8 @@ $horariosDoItemDisponiveis = array_intersect($horariosDisponiveis, $infosItem['h
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous"></script>
+        
+    <?php require "footer.php"; ?>
 </body>
 
 </html>
