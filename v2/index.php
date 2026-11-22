@@ -1,55 +1,56 @@
 <?php
-// Único ponto de entrada: todo pedido chega aqui como index.php?acao=...
 session_start();
 
-// Autoload: carrega a classe só quando ela é usada (sem require_once de classes)
-spl_autoload_register(function (string $classe) {
-    $classe = basename(str_replace('\\', '/', $classe));
-    foreach (['controller', 'model'] as $pasta) {
-        $arquivo = __DIR__ . '/' . $pasta . '/' . $classe . '.php';
-        if (is_file($arquivo)) {
+require_once __DIR__ . '/config/conexao.php';
+
+spl_autoload_register(function (string $classe): void {
+    foreach (['model', 'controller'] as $pasta) {
+        $arquivo = __DIR__ . "/$pasta/$classe.php";
+        if (file_exists($arquivo)) {
             require $arquivo;
             return;
         }
     }
 });
 
-require __DIR__ . '/config/conexao.php'; // precisa definir a variável $pdo
+function paginaNaoEncontrada(): void
+{
+    http_response_code(404);
+    echo "Página não encontrada.";
+}
 
-// Tabela de rotas: 'acao' => [Controller, método]
 $rotas = [
-    // Visitante
-    'catalogo'              => ['ServicoController', 'catalogo'],
-    'detalhes'              => ['ServicoController', 'detalhes'],
-    'login'                 => ['UsuarioController', 'formLogin'],
-    'entrar'                => ['UsuarioController', 'login'],
-    'cadastro'              => ['UsuarioController', 'formCadastro'],
-    'cadastrar'             => ['UsuarioController', 'cadastrar'],
-
-    // Cliente
-    'sair'                  => ['UsuarioController', 'logout'],
-    'nova_solicitacao'      => ['SolicitacaoController', 'formulario'],
-    'salvar_solicitacao'    => ['SolicitacaoController', 'salvar'],
-    'minhas_solicitacoes'   => ['SolicitacaoController', 'minhas'],
-    'cancelar_solicitacao'  => ['SolicitacaoController', 'cancelar'],
-
-    // Administrador
-    'admin_servicos'        => ['ServicoController', 'listarAdmin'],
-    'admin_servico_novo'    => ['ServicoController', 'formNovo'],
-    'admin_servico_salvar'  => ['ServicoController', 'salvar'],
-    'admin_servico_editar'  => ['ServicoController', 'formEditar'],
-    'admin_servico_atualizar' => ['ServicoController', 'atualizar'],
-    'admin_servico_excluir' => ['ServicoController', 'excluir'],
+    'catalogo'       => [ServicoController::class, 'catalogo'],
+    'detalhes'       => [ServicoController::class, 'detalhes'],
+    'admin'          => [ServicoController::class, 'painel'],
+    'novoServico'    => [ServicoController::class, 'novo'],
+    'editarServico'  => [ServicoController::class, 'editar'],
+    'salvarServico'  => [ServicoController::class, 'salvar'],
+    'excluirServico' => [ServicoController::class, 'excluir'],
+    'login'          => [UsuarioController::class, 'login'],
+    'autenticar'     => [UsuarioController::class, 'autenticar'],
+    'cadastro'       => [UsuarioController::class, 'cadastro'],
+    'cadastrar'      => [UsuarioController::class, 'cadastrar'],
+    'sair'           => [UsuarioController::class, 'logout'],
+    'solicitar'      => [SolicitacaoController::class, 'nova'],
+    'adicionar'      => [SolicitacaoController::class, 'adicionar'],
+    'solicitacao'    => [SolicitacaoController::class, 'atual'],
+    'remover'        => [SolicitacaoController::class, 'remover'],
+    'agendar'        => [SolicitacaoController::class, 'criar'],
+    'minhas'         => [SolicitacaoController::class, 'minhas'],
+    'cancelarItem'   => [SolicitacaoController::class, 'cancelarItem'],
+    'cancelar'       => [SolicitacaoController::class, 'cancelar'],
+    'solicitacoes'   => [SolicitacaoController::class, 'todas'],
+    'confirmar'      => [SolicitacaoController::class, 'confirmar'],
 ];
 
 $acao = $_GET['acao'] ?? 'catalogo';
 
-[$classe, $metodo] = $rotas[$acao] ?? ['ErroController', 'naoEncontrado'];
-
-// Se a rota existe mas o controller/método ainda não foi escrito, responde 404
-if (!class_exists($classe) || !method_exists($classe, $metodo)) {
-    [$classe, $metodo] = ['ErroController', 'naoEncontrado'];
+if (!isset($rotas[$acao])) {
+    paginaNaoEncontrada();
+    exit;
 }
 
+[$classe, $metodo] = $rotas[$acao];
 $controller = new $classe($pdo);
 $controller->$metodo();

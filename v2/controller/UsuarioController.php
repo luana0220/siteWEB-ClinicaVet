@@ -1,112 +1,122 @@
 <?php
 class UsuarioController extends Controller
 {
-    private UsuarioModel $usuarios;
+    private UsuarioModel $usuarioModel;
 
     public function __construct(PDO $pdo)
     {
-        parent::__construct($pdo);
-        $this->usuarios = new UsuarioModel($pdo);
+        $this->usuarioModel = new UsuarioModel($pdo);
     }
 
-    // GET index.php?acao=login
-    public function formLogin(): void
-    {
-        $this->irParaInicioSeLogado();
-        $this->render('login_view');
-    }
-
-    // POST index.php?acao=entrar
     public function login(): void
     {
-        $this->exigirPost();
+        if (isset($_SESSION['usuario_id'])) {
+            $this->redirecionar('catalogo');
+        }
 
-        $email = trim($_POST['email'] ?? '');
-        $senha = $_POST['senha'] ?? '';
+        $erros   = $_SESSION['erros'] ?? [];
+        $sucesso = $_SESSION['mensagem_sucesso'] ?? '';
+        unset($_SESSION['erros'], $_SESSION['mensagem_sucesso']);
 
-        $usuario = $this->usuarios->buscarPorEmail($email);
+        $this->render('login_view', [
+            'erros'   => $erros,
+            'sucesso' => $sucesso,
+            'email'   => $_COOKIE['lembrar_email'] ?? '',
+        ]);
+    }
 
-        // Mesma mensagem para e-mail inexistente e senha errada
-        if (!$usuario || !password_verify($senha, $usuario['senha'])) {
-            $this->definirMensagem('E-mail ou senha incorretos.', 'danger');
+    public function autenticar(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirecionar('login');
         }
 
-        session_regenerate_id(true); // evita fixação de sessão
-        $_SESSION['usuario_id']     = $usuario['id'];
-        $_SESSION['usuario_nome']   = $usuario['nome'];
-        $_SESSION['usuario_perfil'] = $usuario['perfil'];
+        $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
+        $senha = $_POST['senha'] ?? '';
 
-        $this->definirMensagem('Bem-vindo(a), ' . $usuario['nome'] . '!');
-        $this->redirecionar($this->paginaInicial($usuario['perfil']));
-    }
+        if ($email && $senha !== '') {
+            try {
+                $usuario = $this->usuarioModel->autenticar($email, $senha);
 
-    // GET index.php?acao=cadastro
-    public function formCadastro(): void
-    {
-        $this->irParaInicioSeLogado();
-        $this->render('cadastro_view');
-    }
+                if ($usuario !== false) {
+                    session_regenerate_id(true);
 
-    // POST index.php?acao=cadastrar
-    public function cadastrar(): void
-    {
-        $this->exigirPost();
+                    $_SESSION['usuario_id']     = $usuario['id'];
+                    $_SESSION['usuario_nome']   = $usuario['nome'];
+                    $_SESSION['usuario_perfil'] = $usuario['perfil'];
 
-        $nome      = trim($_POST['nome'] ?? '');
-        $email     = trim($_POST['email'] ?? '');
-        $senha     = $_POST['senha'] ?? '';
-        $confirmar = $_POST['confirmar_senha'] ?? '';
+                    if (isset($_POST['lembrar'])) {
+                        setcookie('lembrar_email', $email, time() + 30 * 24 * 60 * 60, "/");
+                    } else {
+                        setcookie('lembrar_email', '', time() - 3600, "/");
+                    }
 
-        $erro = null;
-        if ($nome === '') {
-            $erro = 'Informe seu nome.';
-        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $erro = 'Informe um e-mail válido.';
-        } elseif (strlen($senha) < 6) {
-            $erro = 'A senha precisa ter pelo menos 6 caracteres.';
-        } elseif ($senha !== $confirmar) {
-            $erro = 'A confirmação de senha não confere.';
-        } elseif ($this->usuarios->buscarPorEmail($email)) {
-            $erro = 'Já existe uma conta com esse e-mail.';
+                    if ($usuario['perfil'] === 'administrador') {
+                        $this->redirecionar('admin');
+                    }
+                    $this->redirecionar('catalogo');
+                }
+            } catch (PDOException $e) {
+                error_log($e->getMessage());
+            }
         }
 
-        if ($erro !== null) {
-            $this->definirMensagem($erro, 'danger');
-            $this->redirecionar('cadastro');
-        }
-
-        // O perfil é fixo: quem se cadastra pelo site é sempre cliente
-        $hash = password_hash($senha, PASSWORD_DEFAULT);
-        $this->usuarios->criar($nome, $email, $hash, 'cliente');
-
-        $this->definirMensagem('Cadastro realizado! Faça login para continuar.');
+        $_SESSION['erros'] = ["E-mail ou senha incorretos."];
         $this->redirecionar('login');
     }
 
-    // POST index.php?acao=sair
+    public function cadastro(): void
+    {
+        if (isset($_SESSION['usuario_id'])) {
+            $this->redirecionar('catalogo');
+        }
+
+        $erros = $_SESSION['erros'] ?? [];
+        $dados = $_SESSION['dados_cadastro'] ?? [];
+        unset($_SESSION['erros'], $_SESSION['dados_cadastro']);
+
+        $this->render('cadastro_view', [
+            'erros'   => $erros,
+            'sucesso' => '',
+            'dados'   => $dados,
+        ]);
+    }
+
+    public function cadastrar(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirecionar('cadastro');
+        }
+
+        $nome          = trim($_POST['nome'] ?? '');
+        $email         = trim($_POST['email'] ?? '');
+        $telefone      = trim($_POST['telefone'] ?? '');
+        $senha         = $_POST['senha'] ?? '';
+        $confirmaSenha = $_POST['confirma_senha'] ?? '';
+
+        try {
+            $erros = $this->usuarioModel->validar($nome, $email, $telefone, $senha, $confirmaSenha);
+
+            if (empty($erros)) {
+                $this->usuarioModel->inserir($nome, $email, $telefone, $senha);
+
+                $_SESSION['mensagem_sucesso'] = "Cadastro realizado com sucesso! Faça login para continuar.";
+                $this->redirecionar('login');
+            }
+        } catch (PDOException $e) {
+            error_log($e->getMessage());
+            $erros = ["Erro ao realizar o cadastro."];
+        }
+
+        $_SESSION['erros']          = $erros;
+        $_SESSION['dados_cadastro'] = ['nome' => $nome, 'email' => $email, 'telefone' => $telefone];
+        $this->redirecionar('cadastro');
+    }
+
     public function logout(): void
     {
-        $this->exigirPost();
-
         $_SESSION = [];
-        session_regenerate_id(true);
-
-        $this->definirMensagem('Você saiu do sistema.');
+        session_destroy();
         $this->redirecionar('catalogo');
-    }
-
-    // ---------- auxiliares ----------
-    private function paginaInicial(string $perfil): string
-    {
-        return $perfil === 'admin' ? 'admin_servicos' : 'catalogo';
-    }
-
-    private function irParaInicioSeLogado(): void
-    {
-        $usuario = $this->usuarioLogado();
-        if ($usuario !== null) {
-            $this->redirecionar($this->paginaInicial($usuario['perfil']));
-        }
     }
 }
