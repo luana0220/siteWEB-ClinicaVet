@@ -14,14 +14,14 @@ class UsuarioController extends Controller
             $this->redirecionar('catalogo');
         }
 
-        $erros   = $_SESSION['erros'] ?? [];
+        $erros = $_SESSION['erros'] ?? [];
         $sucesso = $_SESSION['mensagem_sucesso'] ?? '';
         unset($_SESSION['erros'], $_SESSION['mensagem_sucesso']);
 
         $this->render('login_view', [
-            'erros'   => $erros,
+            'erros' => $erros,
             'sucesso' => $sucesso,
-            'email'   => $_COOKIE['lembrar_email'] ?? '',
+            'email' => $_COOKIE['lembrar_email'] ?? '',
         ]);
     }
 
@@ -41,8 +41,8 @@ class UsuarioController extends Controller
                 if ($usuario !== false) {
                     session_regenerate_id(true);
 
-                    $_SESSION['usuario_id']     = $usuario['id'];
-                    $_SESSION['usuario_nome']   = $usuario['nome'];
+                    $_SESSION['usuario_id'] = $usuario['id'];
+                    $_SESSION['usuario_nome'] = $usuario['nome'];
                     $_SESSION['usuario_perfil'] = $usuario['perfil'];
 
                     if (isset($_POST['lembrar'])) {
@@ -76,9 +76,9 @@ class UsuarioController extends Controller
         unset($_SESSION['erros'], $_SESSION['dados_cadastro']);
 
         $this->render('cadastro_view', [
-            'erros'   => $erros,
+            'erros' => $erros,
             'sucesso' => '',
-            'dados'   => $dados,
+            'dados' => $dados,
         ]);
     }
 
@@ -88,10 +88,10 @@ class UsuarioController extends Controller
             $this->redirecionar('cadastro');
         }
 
-        $nome          = trim($_POST['nome'] ?? '');
-        $email         = trim($_POST['email'] ?? '');
-        $telefone      = trim($_POST['telefone'] ?? '');
-        $senha         = $_POST['senha'] ?? '';
+        $nome = trim($_POST['nome'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $telefone = trim($_POST['telefone'] ?? '');
+        $senha = $_POST['senha'] ?? '';
         $confirmaSenha = $_POST['confirma_senha'] ?? '';
 
         try {
@@ -108,15 +108,21 @@ class UsuarioController extends Controller
             $erros = ["Erro ao realizar o cadastro."];
         }
 
-        $_SESSION['erros']          = $erros;
+        $_SESSION['erros'] = $erros;
         $_SESSION['dados_cadastro'] = ['nome' => $nome, 'email' => $email, 'telefone' => $telefone];
         $this->redirecionar('cadastro');
     }
 
     public function logout(): void
     {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirecionar('catalogo');
+            return;
+        }
+
         $_SESSION = [];
         session_destroy();
         $this->redirecionar('catalogo');
     }
+
 }
